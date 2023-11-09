@@ -7,6 +7,7 @@ This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute
 
 Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
 
+## Data Introduction
 ```{r}
 library(readr)
 library(ggplot2)
@@ -14,8 +15,13 @@ library(dplyr)
 
 # Load the dataset
 df <- read_csv("Placement_Data_Full_Class.csv")
+str(df)
+summary(df)
+head(df)
+```
 
-#Data Cleaning
+## Data Cleaning
+```{r}
 # Removing unnecessary columns
 college_df <- df %>% select(-sl_no)
 
@@ -42,11 +48,28 @@ college_df$gender <- ifelse(college_df$gender == 'M', 0, 1)
 college_df$workex <- ifelse(college_df$workex == 'No', 0, 1)
 college_df$status <- ifelse(college_df$status == 'Placed', 0, 1)
 
-# Data Visualization
+```
 
-# Correlation heatmap
-correlation_matrix <- cor(college_df)
-heatmap(correlation_matrix, main = "Correlation Heatmap", symm = TRUE, scale = "none")
+## Data Visualization
+
+```{r}
+
+# Load necessary packages
+library(reshape2)
+library(ggplot2)
+
+# Create a correlation matrix
+corr_mat <- round(cor(college_df), 2)
+
+# Melt the correlation matrix for plotting
+melted_corr_mat <- melt(corr_mat)
+
+ggplot(data = melted_corr_mat, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile(width = 1, height = 1) +
+  geom_text(aes(label = value), size = 2) +
+  labs(title = "Correlation Heatmap") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
 ```
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
