@@ -10,6 +10,7 @@ Try executing this chunk by clicking the *Run* button within the chunk or by pla
 ```{r}
 library(readr)
 library(ggplot2)
+library(dplyr)
 
 # Load the dataset
 df <- read_csv("Placement_Data_Full_Class.csv")
@@ -42,11 +43,10 @@ college_df$workex <- ifelse(college_df$workex == 'No', 0, 1)
 college_df$status <- ifelse(college_df$status == 'Placed', 0, 1)
 
 # Data Visualization
-library(ggplot2)
 
 # Correlation heatmap
 correlation_matrix <- cor(college_df)
-heatmap(correlation_matrix, col = colorRampPalette(c("blue", "white", "red"))(25))
+heatmap(correlation_matrix, main = "Correlation Heatmap", symm = TRUE, scale = "none")
 ```
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
