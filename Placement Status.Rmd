@@ -8,7 +8,45 @@ This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute
 Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
 
 ```{r}
-plot(cars)
+library(readr)
+library(ggplot2)
+
+# Load the dataset
+df <- read_csv("Placement_Data_Full_Class.csv")
+
+#Data Cleaning
+# Removing unnecessary columns
+college_df <- df %>% select(-sl_no)
+
+# Cleaning up null data
+college_df$salary[is.na(college_df$salary)] <- 0
+
+# One Hot Encoding
+college_df <- college_df %>% 
+  mutate(specialisation_Mkt_Fin = as.integer(specialisation == 'Mkt&Fin'),
+         specialisation_Mkt_HR = as.integer(specialisation == 'Mkt&HR'),
+         ssc_b_Others = as.integer(ssc_b == 'Others'),
+         hsc_b_Others = as.integer(hsc_b == 'Others'),
+         hsc_s_Arts = as.integer(hsc_s == 'Arts'),
+         hsc_s_Commerce = as.integer(hsc_s == 'Commerce'),
+         hsc_s_Science = as.integer(hsc_s == 'Science'),
+         degree_t_Comm_Mgmt = as.integer(degree_t == 'Comm&Mgmt'),
+         degree_t_Sci_Tech = as.integer(degree_t == 'Sci&Tech'),
+         degree_t_Others = as.integer(degree_t == 'Others'))
+
+college_df <- college_df %>% select(-c(specialisation, ssc_b, hsc_b, hsc_s, degree_t))
+
+# Dictionary replacement
+college_df$gender <- ifelse(college_df$gender == 'M', 0, 1)
+college_df$workex <- ifelse(college_df$workex == 'No', 0, 1)
+college_df$status <- ifelse(college_df$status == 'Placed', 0, 1)
+
+# Data Visualization
+library(ggplot2)
+
+# Correlation heatmap
+correlation_matrix <- cor(college_df)
+heatmap(correlation_matrix, col = colorRampPalette(c("blue", "white", "red"))(25))
 ```
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
