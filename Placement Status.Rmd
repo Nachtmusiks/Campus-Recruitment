@@ -15,8 +15,8 @@ library(dplyr)
 
 # Load the dataset
 df <- read_csv("Placement_Data_Full_Class.csv")
+
 str(df)
-summary(df)
 head(df)
 ```
 
@@ -71,6 +71,67 @@ ggplot(data = melted_corr_mat, aes(x = Var1, y = Var2, fill = value)) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 ```
+### Count Plots 
+
+```{r}
+
+# Gender Count
+ggplot(df, aes(x = gender, fill = gender)) +
+  geom_bar() +
+  geom_text(stat = 'count', aes(label = after_stat(count)), vjust = -0.5) +
+  labs(x = 'Gender', y = 'Count') +
+  scale_fill_brewer(palette = 'Pastel1')
+
+# Work Experience
+ggplot(df, aes(x = workex, fill = workex)) +
+  geom_bar() +
+  geom_text(stat = 'count', aes(label = after_stat(count)), vjust = -0.5) +
+  labs(x = 'Work Experience', y = 'Count') +
+  scale_fill_brewer(palette = 'Pastel1')  
+
+# Placement Status
+ggplot(df, aes(x = status, fill = status)) +
+  geom_bar() +
+  geom_text(stat = 'count', aes(label = after_stat(count)), vjust = -0.5) +
+  labs(x = 'Placement Status', y = 'Count') + 
+  scale_fill_brewer(palette = 'Pastel1')  
+
+# Placement Status by Genders
+ggplot(df, aes(x = status, fill = gender)) +
+  geom_bar(position = 'dodge') +
+  geom_text(stat = 'count', aes(label = after_stat(count)), position = position_dodge(0.9), vjust = -0.5) +
+  labs(x = 'Placement Status by Genders', y = 'Count') +
+  scale_fill_brewer(palette = 'Pastel1')  
+```
+### Distribution Plots
+```{r}
+# Set the plot size
+options(repr.plot.width = 15, repr.plot.height = 8)
+
+# Create distribution plots
+par(mfrow = c(2, 2))
+
+# Secondary Education percentage
+ggplot(df, aes(x = ssc_p)) +
+  geom_histogram(binwidth = 5, fill = 'lightblue', color = 'black') +
+  labs(x = 'Secondary Education percentage', y = 'Frequency')
+
+# Higher Secondary Education percentage
+ggplot(df, aes(x = hsc_p)) +
+  geom_histogram(binwidth = 5, fill = 'lightgreen', color = 'black') +
+  labs(x = 'Higher Secondary Education percentage', y = 'Frequency')
+
+# Undergraduate percentage
+ggplot(df, aes(x = degree_p)) +
+  geom_histogram(binwidth = 5, fill = 'lightcoral', color = 'black') +
+  labs(x = 'Undergraduate percentage', y = 'Frequency')
+
+# MBA percentage
+ggplot(df, aes(x = mba_p)) +
+  geom_histogram(binwidth = 5, fill = 'lightsalmon', color = 'black') +
+  labs(x = 'MBA percentage', y = 'Frequency')
+```
+## Random Forest
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
