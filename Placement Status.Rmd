@@ -1,6 +1,8 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output:
+  html_notebook: default
+  pdf_document: default
 ---
 
 This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
@@ -8,6 +10,7 @@ This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute
 Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
 
 ## Data Introduction
+
 ```{r}
 library(readr)
 library(ggplot2)
@@ -21,6 +24,7 @@ head(df)
 ```
 
 ## Data Cleaning
+
 ```{r}
 # Removing unnecessary columns
 college_df <- df %>% select(-sl_no)
@@ -71,6 +75,7 @@ ggplot(data = melted_corr_mat, aes(x = Var1, y = Var2, fill = value)) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 ```
+
 ### Count Plots 
 
 ```{r}
@@ -103,7 +108,9 @@ ggplot(df, aes(x = status, fill = gender)) +
   labs(x = 'Placement Status by Genders', y = 'Count') +
   scale_fill_brewer(palette = 'Pastel1')  
 ```
+
 ### Distribution Plots
+
 ```{r}
 # Set the plot size
 options(repr.plot.width = 15, repr.plot.height = 8)
@@ -131,7 +138,13 @@ ggplot(df, aes(x = mba_p)) +
   geom_histogram(binwidth = 5, fill = 'lightsalmon', color = 'black') +
   labs(x = 'MBA percentage', y = 'Frequency')
 ```
-## Random Forest
+
+## Logistic Regression
+
+```{r}
+
+```
+
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
