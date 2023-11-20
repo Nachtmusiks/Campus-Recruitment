@@ -29,7 +29,7 @@ head(df)
 # Removing unnecessary columns
 college_df <- df %>% select(-sl_no)
 
-# Cleaning up null data
+# Cleaning up null data by replacing salary with 0
 college_df$salary[is.na(college_df$salary)] <- 0
 
 # One Hot Encoding
@@ -142,7 +142,41 @@ ggplot(df, aes(x = mba_p)) +
 ## Logistic Regression
 
 ```{r}
+college_glm <- glm(status ~ . -salary, data = college_df, family = "binomial", maxit = 1000)
+summary(college_glm)
 
+```
+```{r}
+table = step(college_glm )
+```
+```{r}
+set.seed(41)
+test_error = numeric(10)
+
+for (i in 1:10) {
+  sample_indices = sample.int(n = nrow(college_df), size = floor(0.8 * nrow(college_df)), replace = FALSE)
+  train = college_df[sample_indices,]
+  test = college_df[-sample_indices,]
+
+  college_glm = glm(status ~ gender + ssc_p + hsc_p + degree_p + workex + mba_p + degree_t_Comm_Mgmt,
+                     data = train,
+                     family = "binomial")
+
+  college_pred = predict.glm(college_glm, newdata = test, type = "response")
+  yhat = ifelse(college_pred < 0.5, 'Not Placed', 'Placed')
+
+  conf.test = table(test$status, yhat)
+  test_error[i] = (conf.test[1, 2] + conf.test[2, 1]) / nrow(test)
+}
+
+mean(test_error)
+```
+
+```{r}
+exams.glm2 = glm(status ~ gender + ssc_p + hsc_p + degree_p + workex + mba_p + degree_t_Comm_Mgmt,
+                     data = train,
+                     family = "binomial")
+summary(exams.glm2)
 ```
 
 
@@ -151,3 +185,4 @@ Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by press
 When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
 
 The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
