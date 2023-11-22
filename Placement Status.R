@@ -149,3 +149,110 @@ exams.glm2 = glm(status ~ gender + ssc_p + hsc_p + degree_p + workex + mba_p + d
                      family = "binomial")
 summary(exams.glm2)
 
+## ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+### RANDOM FOREST 
+
+library(randomForest)
+library(randomForestExplainer)
+library(caret)
+library(magrittr) 
+
+# Convert binary variables to factors
+college_df$gender <- as.factor(college_df$gender)
+college_df$workex <- as.factor(college_df$workex)
+college_df$status <- as.factor(college_df$status)
+
+# Split the data into training and testing sets
+set.seed(42)
+sample_indices <- sample.int(n = nrow(college_df), size = floor(0.8 * nrow(-college_df)), replace = FALSE)
+train_data <- college_df[sample_indices, ]
+test_data <- college_df[-sample_indices, ]
+
+## ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+rf_model_importance <- randomForest(status ~ . -salary, data = college_df, importance = TRUE)
+
+# Plot feature importance
+varImpPlot(rf_model_importance, main = "Random Forest Feature Importance")
+
+## ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Define the hyperparameter grid
+hyperparameter_grid <- expand.grid(
+  mtry = c(2, 3, 4)  
+)
+
+# Use train function for hyperparameter tuning
+set.seed(42)
+tuned_rf_model <- train(
+  x = train_data[, -which(names(train_data) %in% c("salary", "status"))],
+  y = train_data$status,
+  method = "rf",
+  tuneGrid = hyperparameter_grid,
+  trControl = trainControl(method = "cv", number = 5)  # 5-fold cross-validation
+)
+
+# Display the tuned model
+print(tuned_rf_model)
+
+## ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Make predictions on the test set
+tuned_rf_pred <- predict(tuned_rf_model, newdata = test_data)
+
+# Convert predicted values to factors with the same levels as the original status variable
+tuned_rf_pred <- factor(tuned_rf_pred, levels = levels(test_data$status))
+
+# Confusion matrix
+conf_matrix_tuned_rf <- confusionMatrix(data = tuned_rf_pred, reference = test_data$status)
+print(conf_matrix_tuned_rf)
+
+## ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Subset the dataframe to include only the selected variables
+selected_vars <- c('ssc_p', 'hsc_p', 'degree_p', 'mba_p', 'etest_p', 'workex')
+college_df_subset <- college_df[, c(selected_vars, 'status')]
+
+# Convert binary variables to factors
+college_df_subset$workex <- as.factor(college_df_subset$workex)
+college_df_subset$status <- as.factor(college_df_subset$status)
+
+# Split the data into training and testing sets
+set.seed(42)
+sample_indices <- sample.int(n = nrow(college_df_subset), size = floor(0.8 * nrow(college_df_subset)), replace = FALSE)
+train_data_subset <- college_df_subset[sample_indices, ]
+test_data_subset <- college_df_subset[-sample_indices, ]
+
+## ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Define the hyperparameter grid
+hyperparameter_grid <- expand.grid(
+  mtry = c(2, 3, 4)  
+)
+
+# Use train function for hyperparameter tuning
+set.seed(42)
+tuned_rf_model_subset <- train(
+  x = train_data_subset[, -which(names(train_data_subset) %in% c("status"))],
+  y = train_data_subset$status,
+  method = "rf",
+  tuneGrid = hyperparameter_grid,
+  trControl = trainControl(method = "cv", number = 5)  # 5-fold cross-validation
+)
+
+# Display the tuned model
+print(tuned_rf_model_subset)
+
+## ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Make predictions on the test set
+tuned_rf_pred_subset <- predict(tuned_rf_model_subset, newdata = test_data_subset)
+
+# Convert predicted values to factors with the same levels as the original status variable
+tuned_rf_pred_subset <- factor(tuned_rf_pred_subset, levels = levels(test_data_subset$status))
+
+# Confusion matrix
+conf_matrix_tuned_rf_subset <- confusionMatrix(data = tuned_rf_pred_subset, reference = test_data_subset$status)
+print(conf_matrix_tuned_rf_subset)
+
