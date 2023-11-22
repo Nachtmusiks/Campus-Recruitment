@@ -1,17 +1,43 @@
 ---
-title: "R Notebook"
+title: "An Analysis on Factors Affecting Placement Status"
+subtitle: "Ilan Lipsky, Samuel Sawyer Todd, Tran Tran"
 output:
-  html_notebook: default
   pdf_document: default
+  html_notebook: default
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+## Introduction
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+The "Campus Recruitment" dataset is a collection of data that measures the academic performance of students from secondary to college. It also provides basic demographics such as their gender, work experience, salary offered, degree type, and placement status.
 
-## Data Introduction
+Variables: 
 
-```{r}
+- sl_no: Serial number
+- gender: Gender of the student (Male or Female)
+- ssc_p: Secondary Education percentage (10th grade)
+- ssc_b: Board of Education (Central/ Others)
+- hsc_p: Higher Secondary Education percentage (12th grade)
+- hsc_b: Board of Education (Central/ Others)
+- hsc_s: Specialization in Higher Secondary Education (Science/ Commerce/Arts)
+- degree_p: Degree Percentage
+- degree_t: Undergraduate Degree Type (Sci&Tech/Comm&Mgmt/Other)
+- workex: Work Experience (Yes/ No)
+- etest_p: Employability test percentage (conducted by the college)
+- specialisation: Post Graduate Specialization (Mkt&HR/Mkt&Fin)
+- mba_p: MBA percentage
+- status: Placement status (Not Placed/Placed)
+- salary: Salary offered by corporate to candidates
+
+
+The main question we are trying to answer using this dataset is:
+
+What important factors influenced a candidate in getting recruited?
+
+## What important factors influenced a candidate in getting recruited?
+
+
+
+```{r echo = F, results = 'hide', warning=F, message=F}
 library(readr)
 library(ggplot2)
 library(dplyr)
@@ -25,7 +51,7 @@ head(df)
 
 ## Data Cleaning
 
-```{r}
+```{r echo = F, results = 'hide'}
 # Removing unnecessary columns
 college_df <- df %>% select(-sl_no)
 
@@ -56,7 +82,7 @@ college_df$status <- ifelse(college_df$status == 'Placed', 0, 1)
 
 ## Data Visualization
 
-```{r}
+```{r echo = F, results = 'hide'}
 
 # Load necessary packages
 library(reshape2)
@@ -78,77 +104,60 @@ ggplot(data = melted_corr_mat, aes(x = Var1, y = Var2, fill = value)) +
 
 ### Count Plots 
 
-```{r}
+```{r echo = F, results = 'hide', warning = F, message = F}
+library(ggplot2)
+library(gridExtra)
+
+library(ggplot2)
+library(gridExtra)
 
 # Gender Count
-ggplot(df, aes(x = gender, fill = gender)) +
+plot1 <- ggplot(df, aes(x = gender, fill = gender)) +
   geom_bar() +
   geom_text(stat = 'count', aes(label = after_stat(count)), vjust = -0.5) +
   labs(x = 'Gender', y = 'Count') +
-  scale_fill_brewer(palette = 'Pastel1')
+  scale_fill_brewer(palette = 'Pastel1') +
+  coord_cartesian(clip = "off")  # Adjusted to prevent clipping
 
 # Work Experience
-ggplot(df, aes(x = workex, fill = workex)) +
+plot2 <- ggplot(df, aes(x = workex, fill = workex)) +
   geom_bar() +
   geom_text(stat = 'count', aes(label = after_stat(count)), vjust = -0.5) +
   labs(x = 'Work Experience', y = 'Count') +
-  scale_fill_brewer(palette = 'Pastel1')  
+  scale_fill_brewer(palette = 'Pastel1') +
+  coord_cartesian(clip = "off")  # Adjusted to prevent clipping
 
 # Placement Status
-ggplot(df, aes(x = status, fill = status)) +
+plot3 <- ggplot(df, aes(x = status, fill = status)) +
   geom_bar() +
   geom_text(stat = 'count', aes(label = after_stat(count)), vjust = -0.5) +
   labs(x = 'Placement Status', y = 'Count') + 
-  scale_fill_brewer(palette = 'Pastel1')  
+  scale_fill_brewer(palette = 'Pastel1') +
+  coord_cartesian(clip = "off")  # Adjusted to prevent clipping
 
 # Placement Status by Genders
-ggplot(df, aes(x = status, fill = gender)) +
+plot4 <- ggplot(df, aes(x = status, fill = gender)) +
   geom_bar(position = 'dodge') +
   geom_text(stat = 'count', aes(label = after_stat(count)), position = position_dodge(0.9), vjust = -0.5) +
   labs(x = 'Placement Status by Genders', y = 'Count') +
-  scale_fill_brewer(palette = 'Pastel1')  
-```
+  scale_fill_brewer(palette = 'Pastel1') +
+  coord_cartesian(clip = "off")  # Adjusted to prevent clipping
 
-### Distribution Plots
+# Arrange the plots into a 2x2 grid using gridExtra
+grid.arrange(plot1, plot2, plot3, plot4, ncol = 2)
 
-```{r}
-# Set the plot size
-options(repr.plot.width = 15, repr.plot.height = 8)
 
-# Create distribution plots
-par(mfrow = c(2, 2))
-
-# Secondary Education percentage
-ggplot(df, aes(x = ssc_p)) +
-  geom_histogram(binwidth = 5, fill = 'lightblue', color = 'black') +
-  labs(x = 'Secondary Education percentage', y = 'Frequency')
-
-# Higher Secondary Education percentage
-ggplot(df, aes(x = hsc_p)) +
-  geom_histogram(binwidth = 5, fill = 'lightgreen', color = 'black') +
-  labs(x = 'Higher Secondary Education percentage', y = 'Frequency')
-
-# Undergraduate percentage
-ggplot(df, aes(x = degree_p)) +
-  geom_histogram(binwidth = 5, fill = 'lightcoral', color = 'black') +
-  labs(x = 'Undergraduate percentage', y = 'Frequency')
-
-# MBA percentage
-ggplot(df, aes(x = mba_p)) +
-  geom_histogram(binwidth = 5, fill = 'lightsalmon', color = 'black') +
-  labs(x = 'MBA percentage', y = 'Frequency')
 ```
 
 ## Logistic Regression
 
-```{r}
-college_glm <- glm(status ~ . -salary, data = college_df, family = "binomial", maxit = 1000)
-summary(college_glm)
+```{r, echo=FALSE}
+college_glm_1 <- glm(status ~ . -salary, data = college_df, family = "binomial", maxit = 1000)
+summary(college_glm_1)
+table = step(college_glm_1, trace = 0 )
+table
+```
 
-```
-```{r}
-table = step(college_glm )
-```
 ```{r}
 set.seed(41)
 test_error = numeric(10)
@@ -168,21 +177,7 @@ for (i in 1:10) {
   conf.test = table(test$status, yhat)
   test_error[i] = (conf.test[1, 2] + conf.test[2, 1]) / nrow(test)
 }
-
 mean(test_error)
 ```
 
-```{r}
-exams.glm2 = glm(status ~ gender + ssc_p + hsc_p + degree_p + workex + mba_p + degree_t_Comm_Mgmt,
-                     data = train,
-                     family = "binomial")
-summary(exams.glm2)
-```
-
-
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
-
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
-
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
 
