@@ -81,7 +81,7 @@ What important factors influenced a candidate in getting recruited?
 
 We will be using two different models and several graphs to answer this question and analyze our dataset. Namely we will be using logistic regression and random forest. First, we will start with logistic regression and use Stepwise algorithm to optimize the model. Afterward, we will start with random forest and use feature importance as well as hyper-parameters tuning to optimize the model. Both models will be using placement status as a response variable to compare and contrast which predictors are of significant for a candidate to be recruited. 
 
-## 1. Logistic Regression Model 
+## 1. Logistic Regression Model (Tran Tran)
 
 ### 1.1 Model Equation and Background
 
@@ -95,11 +95,11 @@ $\beta_8$ = {0 if no, 1 if yes}
 
 $\beta_12$ = {0 if male, 1 if female}
 
-Using this model equation we will look over which predictors are of significant importance using the optimization method mentioned previously. Logistic regression was used because the response variable is categorical with a binary outcome, placed or not placed. Another reason is because this model less complex but still providing a good interpretability, which align with the goal for answering the project question. Unfortunately, logistic regression is more sensitive to outliers and overfitting compare to more complex model like random forest. 
+Using this model equation we will look over which predictors are of significant importance using the optimization method mentioned previously. Logistic regression was used because the response variable is categorical with a binary outcome, placed or not placed. Another reason is because this model less complex but still providing a good interpretability, which align with the goal for answering the project question. Unfortunately, logistic regression is more sensitive to outliers and overfitting compared to more complex models like random forest. 
 
 In regard to the outliers issue I have created multiple distribution plots for all of the continuous variables to see if it is a problem and luckily the outliers are very few to introduce a bias. Then for the overfitting possibility, by using the 80/20 split during training and 10 random subdivision this should not be an issue. 
 
-### 1.2 Logistic Regresion Optimization
+### 1.2 Logistic Regression Optimization
 
 First I will run a summary report on the model with all of the predictors except salary as reasoned previously. Here I will look over which predictors are of statistical significant and I can see that gender, ssc_p, hsc_p, degree_p, workex and mba_p P-values are less than 0.05, indicating that it is of significant to our response variable. 
 
@@ -184,3 +184,93 @@ grid.arrange(plot1, plot2, plot3, plot4, ncol = 2)
 
 
 ```
+## 2. Random Forest Model (Samuel Sawyer Todd, Ilan Lipsky)
+
+### 2.1 Model Equation and Background
+Next we will build the Random Forest using all of the predictors variables except serial number and salary, because having a salary means the candidate is already recruited, and including it will cause the result to be an inaccurate interpretation. Additionally, in contrast to Logistical Regression, Random Forest is robust to overfitting. 
+
+Model equation:
+
+$status\sim\ gender + ssc\_p + ssc\_b + hsc\_p + hsc\_b + hsc\_s + degree\_p + degree\_t + workex + etest\_p + specialisation + mba\_p$
+
+Using this model equation we will look over which predictors are of significant importance using variable importance plot. After converting the binary values to factors to ensure compatibility with the random forest algorithm, we split the data set into training and testing sets using the same fixed seed that was used for our Logistical Regression.
+
+```{r}
+library(randomForest)
+library(randomForestExplainer)
+library(caret)
+library(magrittr) 
+
+# Convert binary variables to factors
+college_df$gender <- as.factor(college_df$gender)
+college_df$workex <- as.factor(college_df$workex)
+college_df$status <- as.factor(college_df$status)
+
+# Split the data into training and testing sets
+set.seed(41)
+sample_indices <- sample.int(n = nrow(college_df), size = floor(0.8 * nrow(-college_df)), replace = FALSE)
+train_data <- college_df[sample_indices, ]
+test_data <- college_df[-sample_indices, ]
+```
+We then utilize the randomForest function to train a random forest model in predicting admission status, excluding the "salary" variable. We can see in the MeanDecreaseGini plot graph of feature importance that "ssc_p", "hsc_p", "degree_p", "mba_p", "etest_p", and "workex" are the most significant variables in predicting college admission status as they are nodes of the steepest drop curve.
+
+```{r}
+# Train random forest model
+rf_model_importance <- randomForest(status ~ . -salary, data = college_df, importance = TRUE)
+
+# Plot feature importance
+varImpPlot(rf_model_importance, main = "Random Forest Feature Importance")
+```
+Next, we rigorously test the trained Random Forest model by applying it to the designated test set, generating predictions that serve as a critical measure of its efficacy. To ensure consistency with the original status variable, the predicted values are converted into factors, maintaining alignment with the variable's distinct levels. We then use this evaluation to compute our confusion matrix, which provides the detailed breakdown into the model's accuracy, highlighting areas of strength and areas that may require refinement.
+
+```{r}
+# Make predictions on the test set
+rf_pred <- predict(rf_model_importance, newdata = test_data)
+
+# Convert predicted values to factors with the same levels as the original status variable
+rf_pred <- factor(rf_pred, levels = levels(test_data$status))
+
+# Confusion matrix
+conf_matrix_rf <- confusionMatrix(data = rf_pred, reference = test_data$status)
+print(conf_matrix_rf)
+
+```
+
+### 2.2 Random Forest Optimization
+
+We attempted to use hyper-parameters for Random Forest optimization, however the default parameters were chosen as they are already optimized for the model. Therefore, we decided against updating the hyper-parameters. 
+
+### 2.3 Random Forest Results
+
+Lastly, the following code showcases a more robust assessment of model performance using iterative evaluation over 10 splits and calculations of the mean test prediction error. The final mean test prediction error after 10 iterations is: 0.1511628. 
+
+```{r}
+set.seed(41)
+test_errors <- numeric(10)
+
+for (iteration in 1:10) {
+  sample_indices <- sample.int(n = nrow(college_df), size = floor(0.8 * nrow(college_df)), replace = FALSE)
+  train_data <- college_df[sample_indices, ]
+  test_data <- college_df[-sample_indices, ]
+  
+  rf_model <- randomForest(status ~ . -salary, data = train_data, importance = TRUE)
+  
+  rf_pred <- predict(rf_model, newdata = test_data)
+  
+  test_error <- mean(rf_pred != test_data$status)
+
+  test_errors[iteration] <- test_error
+  
+  print(paste("Test Prediction Error for Test #", iteration, ":", test_error))
+}
+
+mean_test_error <- mean(test_errors)
+print(mean_test_error)
+```
+
+## Bibliography
+
+Roshan B. (April, 2020). Campus Recruitment. Retrieved September 30, 2023 from https://www.kaggle.com/datasets/benroshan/factors-affecting-campus-placement
+
+## Conclusion
+
