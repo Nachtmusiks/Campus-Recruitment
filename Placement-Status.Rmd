@@ -101,7 +101,7 @@ Using this model equation we will look over which predictors are of significant 
 
 In regard to the outliers issue I have created multiple distribution plots for all of the continuous variables to see if it is a problem and luckily the outliers are very few to introduce a bias. Then for the overfitting possibility, by using the 80/20 split during training and 10 random subdivision this should not be an issue. 
 
-### 1.2 Logistic Regression Optimization
+### 1.2 Building Logistic Regression Model
 
 First I will run a summary report on the model with all of the predictors except salary as reasoned previously. Here I will look over which predictors are of statistical significant and I can see that ssc_p, hsc_p, degree_p, workex and mba_p P-values are less than 0.05, indicating that it is of significant to our response variable, the only one need further assessing is gender because its p-value is slightly higher than the common threshold.
 
@@ -214,7 +214,7 @@ Using this model equation we will look over which predictors are of significant 
 
 After converting the binary values to factors to ensure compatibility with the random forest algorithm, we split the data set into training and testing sets using the same fixed seed that was used for our Logistical Regression.
 
-```{r}
+```{r echo = F, results = 'hide', warning = F, message = F}
 library(randomForest)
 library(randomForestExplainer)
 library(caret)
@@ -230,6 +230,7 @@ set.seed(41)
 sample_indices <- sample.int(n = nrow(college_df), size = floor(0.8 * nrow(-college_df)), replace = FALSE)
 train_data <- college_df[sample_indices, ]
 test_data <- college_df[-sample_indices, ]
+
 ```
 
 We then utilize the randomForest function to train a random forest model in predicting admission status, excluding the "salary" variable. 
@@ -258,13 +259,13 @@ print(conf_matrix_rf)
 
 ```
 
-### 2.2 Random Forest Optimization
+### 2.2 Building Random Forest Model
 
 We attempted to use hyper-parameters for Random Forest optimization, however the default parameters were chosen as they are already optimized for the model. Therefore, we decided against updating the hyper-parameters. 
 
 ### 2.3 Random Forest Results
 
-Lastly, the following code showcases a more robust assessment of model performance using the variables of significant importance and an iterative evaluation over 10 splits and calculations of the mean test prediction error. The final mean test prediction error after 10 iterations is: 0.1395349. 
+Lastly, the following code showcases a more robust assessment of model performance using the variables of significant importance and an iterative evaluation over 10 splits and calculations of the mean test prediction error. 
 
 ```{r}
 set.seed(41)
