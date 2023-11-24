@@ -151,7 +151,7 @@ summary(exams.glm2)
 
 ## ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-### RANDOM FOREST 
+### RANDOM FOREST
 
 library(randomForest)
 library(randomForestExplainer)
@@ -215,9 +215,12 @@ for (iteration in 1:10) {
   
   # Store the test error for this iteration
   test_errors[iteration] <- test_error
+  
+  #print the test error for each iteration
+  print(paste("Test Prediction Error for Test #", iteration, ":", test_error))
 }
 
 # Calculate and print the mean test prediction error over the 10 iterations
 mean_test_error <- mean(test_errors)
-print(paste("Mean Test Prediction Error over 10 iterations:", mean_test_error))
+print(paste(mean_test_error))
 
