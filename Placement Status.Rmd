@@ -1,9 +1,11 @@
 ---
 title: "An Analysis on Factors Affecting Placement Status"
-subtitle: "Ilan Lipsky, Samuel Sawyer Todd, Tran Tran"
+subtitle: Ilan Lipsky, Samuel Sawyer Todd, Tran Tran
 output:
-  pdf_document: default
+  html_document:
+    df_print: paged
   html_notebook: default
+  pdf_document: default
 ---
 
 ```{r echo = F, results = 'hide', warning=F, message=F}
@@ -230,7 +232,8 @@ sample_indices <- sample.int(n = nrow(college_df), size = floor(0.8 * nrow(-coll
 train_data <- college_df[sample_indices, ]
 test_data <- college_df[-sample_indices, ]
 ```
-We then utilize the randomForest function to train a random forest model in predicting admission status, excluding the "salary" variable. We can see in the MeanDecreaseGini plot graph of feature importance that "ssc_p", "hsc_p", "degree_p", "mba_p", "etest_p", and "workex" are the most significant variables in predicting college admission status as they are nodes of the steepest drop curve.
+
+We then utilize the randomForest function to train a random forest model in predicting admission status, excluding the "salary" variable. 
 
 ```{r}
 # Train random forest model
@@ -239,6 +242,8 @@ rf_model_importance <- randomForest(status ~ . -salary, data = college_df, impor
 # Plot feature importance
 varImpPlot(rf_model_importance, main = "Random Forest Feature Importance")
 ```
+We can see in the MeanDecreaseGini plot graph of feature importance that "ssc_p", "hsc_p", "degree_p", "mba_p", "etest_p", and "workex" are the most significant variables in predicting college admission status as they are nodes of the steepest drop curve.
+
 Next, we rigorously test the trained Random Forest model by applying it to the designated test set, generating predictions that serve as a critical measure of its efficacy. To ensure consistency with the original status variable, the predicted values are converted into factors, maintaining alignment with the variable's distinct levels. We then use this evaluation to compute our confusion matrix, which provides the detailed breakdown into the model's accuracy, highlighting areas of strength and areas that may require refinement.
 
 ```{r}
@@ -260,7 +265,7 @@ We attempted to use hyper-parameters for Random Forest optimization, however the
 
 ### 2.3 Random Forest Results
 
-Lastly, the following code showcases a more robust assessment of model performance using the feature importance  iterative evaluation over 10 splits and calculations of the mean test prediction error. The final mean test prediction error after 10 iterations is: 0.1395349. 
+Lastly, the following code showcases a more robust assessment of model performance using the variables of significant importance and an iterative evaluation over 10 splits and calculations of the mean test prediction error. The final mean test prediction error after 10 iterations is: 0.1395349. 
 
 ```{r}
 set.seed(41)
