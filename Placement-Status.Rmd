@@ -45,7 +45,7 @@ college_df <- college_df %>% select(-c(specialisation, ssc_b, hsc_b, hsc_s, degr
 # Dictionary replacement
 college_df$gender <- ifelse(college_df$gender == 'M', 0, 1)
 college_df$workex <- ifelse(college_df$workex == 'No', 0, 1)
-college_df$status <- ifelse(college_df$status == 'Placed', 0, 1)
+college_df$status <- ifelse(college_df$status == 'Not Placed', 0, 1)
 
 ```
 
@@ -199,7 +199,6 @@ exams.glm2 = glm(status ~ gender + ssc_p + hsc_p + degree_p + workex + mba_p + d
                      family = "binomial")
 summary(exams.glm2)
 ```
-
 
 
 ## 2. Random Forest Model (Samuel Sawyer Todd, Ilan Lipsky)
