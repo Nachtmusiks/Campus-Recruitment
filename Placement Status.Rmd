@@ -48,71 +48,7 @@ college_df$status <- ifelse(college_df$status == 'Placed', 0, 1)
 ```
 
 
-```{r echo = F, results = 'hide'}
 
-# Load necessary packages
-library(reshape2)
-library(ggplot2)
-
-# Create a correlation matrix
-corr_mat <- round(cor(college_df), 2)
-
-# Melt the correlation matrix for plotting
-melted_corr_mat <- melt(corr_mat)
-
-ggplot(data = melted_corr_mat, aes(x = Var1, y = Var2, fill = value)) +
-  geom_tile(width = 1, height = 1) +
-  geom_text(aes(label = value), size = 2) +
-  labs(title = "Correlation Heatmap") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
-```
-
-
-```{r echo = F, results = 'hide', warning = F, message = F}
-library(ggplot2)
-library(gridExtra)
-
-library(ggplot2)
-library(gridExtra)
-
-# Gender Count
-plot1 <- ggplot(df, aes(x = gender, fill = gender)) +
-  geom_bar() +
-  geom_text(stat = 'count', aes(label = after_stat(count)), vjust = -0.5) +
-  labs(x = 'Gender', y = 'Count') +
-  scale_fill_brewer(palette = 'Pastel1') +
-  coord_cartesian(clip = "off")  
-
-# Placement Status and Work Experience
-plot2 <- ggplot(df, aes(x = status, fill = workex)) +
-  geom_bar(position = 'dodge') +
-  geom_text(stat = 'count', aes(label = after_stat(count)), position = position_dodge(0.9), vjust = -0.5) +
-  labs(x = 'Placement Status by Work Experience', y = 'Count') +
-  scale_fill_brewer(palette = 'Pastel1') +
-  coord_cartesian(clip = "off")  
-
-# Placement Status
-plot3 <- ggplot(df, aes(x = status, fill = status)) +
-  geom_bar() +
-  geom_text(stat = 'count', aes(label = after_stat(count)), vjust = -0.5) +
-  labs(x = 'Placement Status', y = 'Count') + 
-  scale_fill_brewer(palette = 'Pastel1') +
-  coord_cartesian(clip = "off")  
-
-# Placement Status by Genders
-plot4 <- ggplot(df, aes(x = status, fill = gender)) +
-  geom_bar(position = 'dodge') +
-  geom_text(stat = 'count', aes(label = after_stat(count)), position = position_dodge(0.9), vjust = -0.5) +
-  labs(x = 'Placement Status by Genders', y = 'Count') +
-  scale_fill_brewer(palette = 'Pastel1') +
-  coord_cartesian(clip = "off") 
-
-# Arrange the plots into a 2x2 
-grid.arrange(plot1, plot2, plot3, plot4, ncol = 2)
-
-
-```
 
 ## Introduction
 
@@ -204,4 +140,47 @@ for (i in 1:10) {
 mean(test_error)
 ```
 
+```{r echo = F, results = 'hide', warning = F, message = F}
+library(ggplot2)
+library(gridExtra)
 
+library(ggplot2)
+library(gridExtra)
+
+# Gender Count
+plot1 <- ggplot(df, aes(x = gender, fill = gender)) +
+  geom_bar() +
+  geom_text(stat = 'count', aes(label = after_stat(count)), vjust = -0.5) +
+  labs(x = 'Gender', y = 'Count') +
+  scale_fill_brewer(palette = 'Pastel1') +
+  coord_cartesian(clip = "off")  
+
+# Placement Status and Work Experience
+plot2 <- ggplot(df, aes(x = status, fill = workex)) +
+  geom_bar(position = 'dodge') +
+  geom_text(stat = 'count', aes(label = after_stat(count)), position = position_dodge(0.9), vjust = -0.5) +
+  labs(x = 'Placement Status by Work Experience', y = 'Count') +
+  scale_fill_brewer(palette = 'Pastel1') +
+  coord_cartesian(clip = "off")  
+
+# Placement Status
+plot3 <- ggplot(df, aes(x = status, fill = status)) +
+  geom_bar() +
+  geom_text(stat = 'count', aes(label = after_stat(count)), vjust = -0.5) +
+  labs(x = 'Placement Status', y = 'Count') + 
+  scale_fill_brewer(palette = 'Pastel1') +
+  coord_cartesian(clip = "off")  
+
+# Placement Status by Genders
+plot4 <- ggplot(df, aes(x = status, fill = gender)) +
+  geom_bar(position = 'dodge') +
+  geom_text(stat = 'count', aes(label = after_stat(count)), position = position_dodge(0.9), vjust = -0.5) +
+  labs(x = 'Placement Status by Genders', y = 'Count') +
+  scale_fill_brewer(palette = 'Pastel1') +
+  coord_cartesian(clip = "off") 
+
+# Arrange the plots into a 2x2 
+grid.arrange(plot1, plot2, plot3, plot4, ncol = 2)
+
+
+```
