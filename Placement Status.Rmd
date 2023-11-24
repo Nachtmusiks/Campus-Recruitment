@@ -6,37 +6,6 @@ output:
   html_notebook: default
 ---
 
-## Introduction
-
-The "Campus Recruitment" dataset is a collection of data that measures the academic performance of students from secondary to college. It also provides basic demographics such as their gender, work experience, salary offered, degree type, and placement status.
-
-Variables: 
-
-- sl_no: Serial number
-- gender: Gender of the student (Male or Female)
-- ssc_p: Secondary Education percentage (10th grade)
-- ssc_b: Board of Education (Central/ Others)
-- hsc_p: Higher Secondary Education percentage (12th grade)
-- hsc_b: Board of Education (Central/ Others)
-- hsc_s: Specialization in Higher Secondary Education (Science/ Commerce/Arts)
-- degree_p: Degree Percentage
-- degree_t: Undergraduate Degree Type (Sci&Tech/Comm&Mgmt/Other)
-- workex: Work Experience (Yes/ No)
-- etest_p: Employability test percentage (conducted by the college)
-- specialisation: Post Graduate Specialization (Mkt&HR/Mkt&Fin)
-- mba_p: MBA percentage
-- status: Placement status (Not Placed/Placed)
-- salary: Salary offered by corporate to candidates
-
-
-The main question we are trying to answer using this dataset is:
-
-What important factors influenced a candidate in getting recruited?
-
-## What important factors influenced a candidate in getting recruited?
-
-
-
 ```{r echo = F, results = 'hide', warning=F, message=F}
 library(readr)
 library(ggplot2)
@@ -48,8 +17,6 @@ df <- read_csv("Placement_Data_Full_Class.csv")
 str(df)
 head(df)
 ```
-
-## Data Cleaning
 
 ```{r echo = F, results = 'hide'}
 # Removing unnecessary columns
@@ -80,7 +47,6 @@ college_df$status <- ifelse(college_df$status == 'Placed', 0, 1)
 
 ```
 
-## Data Visualization
 
 ```{r echo = F, results = 'hide'}
 
@@ -102,7 +68,6 @@ ggplot(data = melted_corr_mat, aes(x = Var1, y = Var2, fill = value)) +
 
 ```
 
-### Count Plots 
 
 ```{r echo = F, results = 'hide', warning = F, message = F}
 library(ggplot2)
@@ -117,15 +82,15 @@ plot1 <- ggplot(df, aes(x = gender, fill = gender)) +
   geom_text(stat = 'count', aes(label = after_stat(count)), vjust = -0.5) +
   labs(x = 'Gender', y = 'Count') +
   scale_fill_brewer(palette = 'Pastel1') +
-  coord_cartesian(clip = "off")  # Adjusted to prevent clipping
+  coord_cartesian(clip = "off")  
 
-# Work Experience
-plot2 <- ggplot(df, aes(x = workex, fill = workex)) +
-  geom_bar() +
-  geom_text(stat = 'count', aes(label = after_stat(count)), vjust = -0.5) +
-  labs(x = 'Work Experience', y = 'Count') +
+# Placement Status and Work Experience
+plot2 <- ggplot(df, aes(x = status, fill = workex)) +
+  geom_bar(position = 'dodge') +
+  geom_text(stat = 'count', aes(label = after_stat(count)), position = position_dodge(0.9), vjust = -0.5) +
+  labs(x = 'Placement Status by Work Experience', y = 'Count') +
   scale_fill_brewer(palette = 'Pastel1') +
-  coord_cartesian(clip = "off")  # Adjusted to prevent clipping
+  coord_cartesian(clip = "off")  
 
 # Placement Status
 plot3 <- ggplot(df, aes(x = status, fill = status)) +
@@ -133,7 +98,7 @@ plot3 <- ggplot(df, aes(x = status, fill = status)) +
   geom_text(stat = 'count', aes(label = after_stat(count)), vjust = -0.5) +
   labs(x = 'Placement Status', y = 'Count') + 
   scale_fill_brewer(palette = 'Pastel1') +
-  coord_cartesian(clip = "off")  # Adjusted to prevent clipping
+  coord_cartesian(clip = "off")  
 
 # Placement Status by Genders
 plot4 <- ggplot(df, aes(x = status, fill = gender)) +
@@ -141,22 +106,81 @@ plot4 <- ggplot(df, aes(x = status, fill = gender)) +
   geom_text(stat = 'count', aes(label = after_stat(count)), position = position_dodge(0.9), vjust = -0.5) +
   labs(x = 'Placement Status by Genders', y = 'Count') +
   scale_fill_brewer(palette = 'Pastel1') +
-  coord_cartesian(clip = "off")  # Adjusted to prevent clipping
+  coord_cartesian(clip = "off") 
 
-# Arrange the plots into a 2x2 grid using gridExtra
+# Arrange the plots into a 2x2 
 grid.arrange(plot1, plot2, plot3, plot4, ncol = 2)
 
 
 ```
 
-## Logistic Regression
+## Introduction
+
+The "Campus Recruitment" dataset is a collection of data that measures the academic performance of students from secondary to college. It also provides basic demographics such as their gender, work experience, salary offered, degree type, and placement status.
+
+Variables: 
+
+- sl_no: Serial number
+- gender: Gender of the student (Male or Female)
+- ssc_p: Secondary Education percentage (10th grade)
+- ssc_b: Board of Education (Central/ Others)
+- hsc_p: Higher Secondary Education percentage (12th grade)
+- hsc_b: Board of Education (Central/ Others)
+- hsc_s: Specialization in Higher Secondary Education (Science/ Commerce/Arts)
+- degree_p: Degree Percentage
+- degree_t: Undergraduate Degree Type (Sci&Tech/Comm&Mgmt/Other)
+- workex: Work Experience (Yes/ No)
+- etest_p: Employability test percentage (conducted by the college)
+- specialisation: Post Graduate Specialization (Mkt&HR/Mkt&Fin)
+- mba_p: MBA percentage
+- status: Placement status (Not Placed/Placed)
+- salary: Salary offered by corporate to candidates
+
+
+The main question we are trying to answer using this dataset is:
+
+What important factors influenced a candidate in getting recruited?
+
+## What important factors influenced a candidate in getting recruited?
+
+We will be using two different models and several graphs to answer this question and analyze our dataset. Namely we will be using logistic regression and random forest. First, we will start with logistic regression and use Stepwise algorithm to optimize the model. Afterward, we will start with random forest and use feature importance as well as hyper-parameters tuning to optimize the model. Both models will be using placement status as a response variable to compare and contrast which predictors are of significant for a candidate to be recruited. 
+
+## 1. Logistic Regression Model 
+
+### 1.1 Model Equation and Background
+
+First we will build the model using all of the predictors variables except serial number and salary, because having a salary mean the candidate already recruited and including it will cause the result to be inaccurate interpretation.
+
+Model equation: 
+
+$log(\frac{p}{1-p})=\beta_0 + \beta_1 * ssc_p + \beta_2 * ssc_b + \beta_3*hsc_p+\beta_4*hsc_b+\beta_5*hsc_s+\beta_6*degree_p+\beta_7*degree_t+\beta_8*workex+\beta_9*etest_p+\beta_{10}*specialisation+\beta_{11}*mba_p+\beta_{12}*gender+\epsilon$
+
+$\beta_8$ = {0 if no, 1 if yes}
+
+$\beta_12$ = {0 if male, 1 if female}
+
+Using this model equation we will look over which predictors are of significant importance using the optimization method mentioned previously. Logistic regression was used because the response variable is categorical with a binary outcome, placed or not placed. Another reason is because this model less complex but still providing a good interpretability, which align with the goal for answering the project question. Unfortunately, logistic regression is more sensitive to outliers and overfitting compare to more complex model like random forest. 
+
+In regard to the outliers issue I have created multiple distribution plots for all of the continuous variables to see if it is a problem and luckily the outliers are very few to introduce a bias. Then for the overfitting possibility, by using the 80/20 split during training and 10 random subdivision this should not be an issue. 
+
+### 1.2 Logistic Regresion Optimization
+
+First I will run a summary report on the model with all of the predictors except salary as reasoned previously. Here I will look over which predictors are of statistical significant and I can see that gender, ssc_p, hsc_p, degree_p, workex and mba_p P-values are less than 0.05, indicating that it is of significant to our response variable. 
 
 ```{r, echo=FALSE}
 college_glm_1 <- glm(status ~ . -salary, data = college_df, family = "binomial", maxit = 1000)
 summary(college_glm_1)
+```
+
+Afterward I will run the Stepwise algorithm which will progressively try to minimize the AIC and maximize the $R^2$ by removing and adding predictors to the model.  
+```{r}
 table = step(college_glm_1, trace = 0 )
 table
 ```
+
+The final result for the best optimization matched well with what we already saw through the summary table prior to running the step() function. With gender, ssc_p, hsc_p, degree_p, workex and mba_p being the best predictors for the model, but we also see degree_t_Comm_Mgmt being the extra predictor in the result despite its high P-value. This could be because while it is not of significant when combined with the initial all predictors run, it is in fact of significant when we run with this selected group of predictors instead. 
+
+### 1.3 Logistic Regression Results
 
 ```{r}
 set.seed(41)
