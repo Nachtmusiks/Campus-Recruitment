@@ -2,8 +2,8 @@
 title: "An Analysis on Factors Affecting Placement Status"
 subtitle: "Ilan Lipsky, Samuel Sawyer Todd, Tran Tran"
 output:
-  pdf_document: default
   html_notebook: default
+  pdf_document: default
 ---
 
 ```{r echo = F, results = 'hide', warning=F, message=F}
@@ -93,7 +93,7 @@ $log(\frac{p}{1-p})=\beta_0 + \beta_1 * ssc_p + \beta_2 * ssc_b + \beta_3*hsc_p+
 
 $\beta_8$ = {0 if no, 1 if yes}
 
-$\beta_12$ = {0 if male, 1 if female}
+$\beta_{12}$ = {0 if male, 1 if female}
 
 Using this model equation we will look over which predictors are of significant importance using the optimization method mentioned previously. Logistic regression was used because the response variable is categorical with a binary outcome, placed or not placed. Another reason is because this model less complex but still providing a good interpretability, which align with the goal for answering the project question. Unfortunately, logistic regression is more sensitive to outliers and overfitting compare to more complex model like random forest. 
 
@@ -101,43 +101,11 @@ In regard to the outliers issue I have created multiple distribution plots for a
 
 ### 1.2 Logistic Regresion Optimization
 
-First I will run a summary report on the model with all of the predictors except salary as reasoned previously. Here I will look over which predictors are of statistical significant and I can see that gender, ssc_p, hsc_p, degree_p, workex and mba_p P-values are less than 0.05, indicating that it is of significant to our response variable. 
+First I will run a summary report on the model with all of the predictors except salary as reasoned previously. Here I will look over which predictors are of statistical significant and I can see that ssc_p, hsc_p, degree_p, workex and mba_p P-values are less than 0.05, indicating that it is of significant to our response variable, the only one need further assessing is gender because its p-value is slightly higher than the common threshold.
 
 ```{r, echo=FALSE}
 college_glm_1 <- glm(status ~ . -salary, data = college_df, family = "binomial", maxit = 1000)
 summary(college_glm_1)
-```
-
-Afterward I will run the Stepwise algorithm which will progressively try to minimize the AIC and maximize the $R^2$ by removing and adding predictors to the model.  
-```{r}
-table = step(college_glm_1, trace = 0 )
-table
-```
-
-The final result for the best optimization matched well with what we already saw through the summary table prior to running the step() function. With gender, ssc_p, hsc_p, degree_p, workex and mba_p being the best predictors for the model, but we also see degree_t_Comm_Mgmt being the extra predictor in the result despite its high P-value. This could be because while it is not of significant when combined with the initial all predictors run, it is in fact of significant when we run with this selected group of predictors instead. 
-
-### 1.3 Logistic Regression Results
-
-```{r}
-set.seed(41)
-test_error = numeric(10)
-
-for (i in 1:10) {
-  sample_indices = sample.int(n = nrow(college_df), size = floor(0.8 * nrow(college_df)), replace = FALSE)
-  train = college_df[sample_indices,]
-  test = college_df[-sample_indices,]
-
-  college_glm = glm(status ~ gender + ssc_p + hsc_p + degree_p + workex + mba_p + degree_t_Comm_Mgmt,
-                     data = train,
-                     family = "binomial")
-
-  college_pred = predict.glm(college_glm, newdata = test, type = "response")
-  yhat = ifelse(college_pred < 0.5, 'Not Placed', 'Placed')
-
-  conf.test = table(test$status, yhat)
-  test_error[i] = (conf.test[1, 2] + conf.test[2, 1]) / nrow(test)
-}
-mean(test_error)
 ```
 
 ```{r echo = F, results = 'hide', warning = F, message = F}
@@ -184,3 +152,50 @@ grid.arrange(plot1, plot2, plot3, plot4, ncol = 2)
 
 
 ```
+
+Looking over the count plots above, we can see that it matches some of the assumption that was found from the summary table. Placement status by genders for example, while at first seemingly skewed toward male students being favored, we have to remember the gender population in the dataset is 76 females vs 139 males, male students are nearly double females. 
+The placement status by genders showed that there is bias against females student in proportion to the overall gender distribution in the dataset, and while it is not a large bias, I think it is still beneficial to include it in the final optimization result.
+
+Now I will run the Stepwise algorithm which will progressively try to minimize the AIC and maximize the $R^2$ by removing and adding predictors to the model.  
+```{r}
+table = step(college_glm_1, trace = 0 )
+table
+```
+
+The final result for the best optimization matched well with what we already saw through the summary table prior to running the step() function. With gender, ssc_p, hsc_p, degree_p, workex and mba_p being the best predictors for the model, but we also see degree_t_Comm_Mgmt being the extra predictor in the result despite its high P-value. This could be because while it is not of significant when combined with the initial all predictors run, it is in fact of significant when we run with this selected group of predictors instead. 
+
+### 1.3 Logistic Regression Results
+
+The optimization process is finished, so I will now perform cross validation with 80% training and 20% testing sets. 
+
+```{r}
+set.seed(41)
+test_error = numeric(10)
+
+for (i in 1:10) {
+  sample_indices = sample.int(n = nrow(college_df), size = floor(0.8 * nrow(college_df)), replace = FALSE)
+  train = college_df[sample_indices,]
+  test = college_df[-sample_indices,]
+
+  college_glm = glm(status ~ gender + ssc_p + hsc_p + degree_p + workex + mba_p + degree_t_Comm_Mgmt,
+                     data = train,
+                     family = "binomial")
+
+  college_pred = predict.glm(college_glm, newdata = test, type = "response")
+  yhat = ifelse(college_pred < 0.5, 'Not Placed', 'Placed')
+
+  conf.test = table(test$status, yhat)
+  test_error[i] = (conf.test[1, 2] + conf.test[2, 1]) / nrow(test)
+}
+mean(test_error)
+```
+The result is quite promising, with the average test error rate of only 11.40% for the logistic regression model. 
+
+```{r}
+exams.glm2 = glm(status ~ gender + ssc_p + hsc_p + degree_p + workex + mba_p + degree_t_Comm_Mgmt,
+                     data = train,
+                     family = "binomial")
+summary(exams.glm2)
+```
+
+
