@@ -2,10 +2,10 @@
 title: "An Analysis on Factors Affecting Placement Status"
 subtitle: Ilan Lipsky, Samuel Sawyer Todd, Tran Tran
 output:
+  pdf_document: default
+  html_notebook: default
   html_document:
     df_print: paged
-  html_notebook: default
-  pdf_document: default
 ---
 
 ```{r echo = F, results = 'hide', warning=F, message=F}
@@ -81,13 +81,13 @@ What important factors influenced a candidate in getting recruited?
 
 ## What important factors influenced a candidate in getting recruited?
 
-We will be using two different models and several graphs to answer this question and analyze our dataset. Namely we will be using logistic regression and random forest. First, we will start with logistic regression and use Stepwise algorithm to optimize the model. Afterward, we will start with random forest and use feature importance as well as hyper-parameters tuning to optimize the model. Both models will be using placement status as a response variable to compare and contrast which predictors are of significant for a candidate to be recruited. 
+We will be using two different models and several graphs to answer this question and analyze our dataset. Namely, we will be using logistic regression and random forest. First, we will start with logistic regression and use a Stepwise algorithm to optimize the model. Afterward, we will start with random forest and use feature importance to optimize the model. Both models will be using placement status as a response variable to compare and contrast which predictors are significant for a candidate to be recruited.  
 
 ## 1. Logistic Regression Model (Tran Tran)
 
 ### 1.1 Model Equation and Background
 
-First we will build the model using all of the predictors variables except serial number and salary, because having a salary mean the candidate already recruited and including it will cause the result to be inaccurate interpretation.
+First, we will build the model using all of the predictor variables except serial number and salary, because having a salary means the candidate has already been recruited and including it will cause the result to be interpret inaccurately.
 
 Model equation: 
 
@@ -97,13 +97,13 @@ $\beta_8$ = {0 if no, 1 if yes}
 
 $\beta_{12}$ = {0 if male, 1 if female}
 
-Using this model equation we will look over which predictors are of significant importance using the optimization method mentioned previously. Logistic regression was used because the response variable is categorical with a binary outcome, placed or not placed. Another reason is because this model less complex but still providing a good interpretability, which align with the goal for answering the project question. Unfortunately, logistic regression is more sensitive to outliers and overfitting compared to more complex models like random forest. 
+Using this model equation we will look over which predictors are of significant importance using the optimization method mentioned previously. Logistic regression was used because the response variable is categorical with a binary outcome, placed or not placed. Another reason is that this model is less complex but still provides good interpretability, which aligns with the goal of answering the project question. Unfortunately, logistic regression is more sensitive to outliers and overfitting compared to more complex models like random forest. 
 
 In regard to the outliers issue I have created multiple distribution plots for all of the continuous variables to see if it is a problem and luckily the outliers are very few to introduce a bias. Then for the overfitting possibility, by using the 80/20 split during training and 10 random subdivision this should not be an issue. 
 
 ### 1.2 Building Logistic Regression Model
 
-First I will run a summary report on the model with all of the predictors except salary as reasoned previously. Here I will look over which predictors are of statistical significant and I can see that ssc_p, hsc_p, degree_p, workex and mba_p P-values are less than 0.05, indicating that it is of significant to our response variable, the only one need further assessing is gender because its p-value is slightly higher than the common threshold.
+First I will run a summary report on the model with all of the predictors except salary as reasoned previously. Here I will look over which predictors are statistically significant and I can see that ssc_p, hsc_p, degree_p, workex, and mba_p P-values are less than 0.05, indicating that it is significant to our response variable, the only one need further assessing is gender because its p-value is slightly higher than the common threshold.
 
 ```{r, echo=FALSE}
 college_glm_1 <- glm(status ~ . -salary, data = college_df, family = "binomial", maxit = 1000)
@@ -155,20 +155,21 @@ grid.arrange(plot1, plot2, plot3, plot4, ncol = 2)
 
 ```
 
-Looking over the count plots above, we can see that it matches some of the assumption that was found from the summary table. Placement status by genders for example, while at first seemingly skewed toward male students being favored, we have to remember the gender population in the dataset is 76 females vs 139 males, male students are nearly double females. 
-The placement status by genders showed that there is bias against females student in proportion to the overall gender distribution in the dataset, and while it is not a large bias, I think it is still beneficial to include it in the final optimization result.
+Looking over the count plots above, we can see that they match some of the assumptions that were found in the summary table. Placement status by genders for example, while at first seemingly skewed toward male students being favored, we have to remember the gender population in the dataset is 76 females vs 139 males, male students are nearly double females. 
+The placement status by gender showed that there is bias against female students in proportion to the overall gender distribution in the dataset, and while it is not a large bias, I think it is still beneficial to include it in the final building process.
 
 Now I will run the Stepwise algorithm which will progressively try to minimize the AIC and maximize the $R^2$ by removing and adding predictors to the model.  
+
 ```{r}
 table = step(college_glm_1, trace = 0 )
 table
 ```
 
-The final result for the best optimization matched well with what we already saw through the summary table prior to running the step() function. With gender, ssc_p, hsc_p, degree_p, workex and mba_p being the best predictors for the model, but we also see degree_t_Comm_Mgmt being the extra predictor in the result despite its high P-value. This could be because while it is not of significant when combined with the initial all predictors run, it is in fact of significant when we run with this selected group of predictors instead. 
+The final result for the best optimization matched well with what we already saw through the summary table before running the step() function. With gender, ssc_p, hsc_p, degree_p, workex, and mba_p being the best predictors for the model, but we also see degree_t_Comm_Mgmt being the extra predictor in the result despite its high P-value. This could be because while it is not significant when combined with the initial all predictors run, it is in fact significant when we run with this selected group of predictors instead. 
 
 ### 1.3 Logistic Regression Results
 
-The optimization process is finished, so I will now perform cross validation with 80% training and 20% testing sets. 
+The building process is finished, so I will now perform cross validation with 80% training and 20% testing sets. 
 
 ```{r}
 set.seed(41)
@@ -191,7 +192,7 @@ for (i in 1:10) {
 }
 mean(test_error)
 ```
-The result is quite promising, with the average test error rate of only 11.40% for the logistic regression model. 
+The result is quite promising, with an average test error rate of only 11.40% for the logistic regression model. This indicates that the model performs reasonably well in predicting the outcome for placement status 
 
 ```{r}
 exams.glm2 = glm(status ~ gender + ssc_p + hsc_p + degree_p + workex + mba_p + degree_t_Comm_Mgmt,
@@ -200,7 +201,9 @@ exams.glm2 = glm(status ~ gender + ssc_p + hsc_p + degree_p + workex + mba_p + d
 summary(exams.glm2)
 ```
 
-
+Looking over all of the results, we can now answer the question: "What important factors influenced a candidate in getting recruited?". 
+From the summary table, we can see that if your gender is male, with a higher Secondary Education percentage, Higher Secondary Education percentage, Degree percentage and you have work experience as well as pursuing a degree in Communication and Management then your odds of getting recruited increase. Interestingly, having a higher MBA percentage actually decreases the log-odds of getting hired. This I surmise might be due to a diminishing return issue, because in the specialization column, there are only two specialties for students going into post-grad, which are Marketing & Finance or Marketing & HR, both of which are not exactly required going into the field, unlike more STEM-focused fields. It could also be because while having a good MBA percentage is generally beneficial, there may be a point beyond which additional percentage points do not contribute significantly to getting hired. 
+ 
 ## 2. Random Forest Model (Samuel Sawyer Todd, Ilan Lipsky)
 
 ### 2.1 Model Equation and Background
