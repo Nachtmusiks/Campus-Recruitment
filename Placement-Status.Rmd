@@ -176,11 +176,13 @@ set.seed(41)
 test_error = numeric(10)
 
 for (i in 1:10) {
-  sample_indices = sample.int(n = nrow(college_df), size = floor(0.8 * nrow(college_df)), replace = FALSE)
+  sample_indices = sample.int(n = nrow(college_df), size = floor(0.8 * nrow(college_df)), 
+                              replace = FALSE)
   train = college_df[sample_indices,]
   test = college_df[-sample_indices,]
 
-  college_glm = glm(status ~ gender + ssc_p + hsc_p + degree_p + workex + mba_p + degree_t_Comm_Mgmt,
+  college_glm = glm(status ~ gender + ssc_p + hsc_p + degree_p + workex 
+                    + mba_p + degree_t_Comm_Mgmt,
                      data = train,
                      family = "binomial")
 
@@ -195,7 +197,8 @@ mean(test_error)
 The result is quite promising, with an average test error rate of only 11.40% for the logistic regression model. This indicates that the model performs reasonably well in predicting the outcome for placement status 
 
 ```{r}
-exams.glm2 = glm(status ~ gender + ssc_p + hsc_p + degree_p + workex + mba_p + degree_t_Comm_Mgmt,
+exams.glm2 = glm(status ~ gender + ssc_p + hsc_p + degree_p + workex 
+                 + mba_p + degree_t_Comm_Mgmt,
                      data = train,
                      family = "binomial")
 summary(exams.glm2)
