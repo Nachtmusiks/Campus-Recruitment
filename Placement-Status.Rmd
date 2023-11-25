@@ -155,7 +155,7 @@ grid.arrange(plot1, plot2, plot3, plot4, ncol = 2)
 
 ```
 
-Looking over the count plots above, we can see that they match some of the assumptions that were found in the summary table. Placement status by genders for example, while at first seemingly skewed toward male students being favored, we have to remember the gender population in the dataset is 76 females vs 139 males, male students are nearly double females. 
+Looking over the count plots above, we can see that they match some of the assumptions that were found in the summary table. Placement status by genders for example, while at first seemingly skewed toward male students being favored, we have to remember the gender population in the dataset is 76 females vs 139 males, male students are nearly double compared to female students. 
 The placement status by gender showed that there is bias against female students in proportion to the overall gender distribution in the dataset, and while it is not a large bias, I think it is still beneficial to include it in the final building process.
 
 Now I will run the Stepwise algorithm which will progressively try to minimize the AIC and maximize the $R^2$ by removing and adding predictors to the model.  
