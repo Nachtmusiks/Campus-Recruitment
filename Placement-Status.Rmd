@@ -218,6 +218,9 @@ $status\sim\ gender + ssc\_p + ssc\_b + hsc\_p + hsc\_b + hsc\_s + degree\_p + d
 
 Using this model equation we will look over which predictors are of significant importance using variable importance plot. Random Forest was used because it is more robust to overfitting compared to Logistical Regression, especially when dealing with high-dimensional data. It combines predictions from multiple decision trees, providing a natural form of regularization. Additionally, it has a built-in feature importance measure, which enables the identification of key predictors in the model. However, Random Forest models are computationally intensive and may overfit to noise in training data if the number of trees is too high
 
+
+### 2.2 Building Random Forest Model
+
 After converting the binary values to factors to ensure compatibility with the random forest algorithm, we split the data set into training and testing sets using the same fixed seed that was used for our Logistical Regression.
 
 ```{r echo = F, results = 'hide', warning = F, message = F}
@@ -239,7 +242,7 @@ test_data <- college_df[-sample_indices, ]
 
 ```
 
-We then utilize the randomForest function to train a random forest model in predicting admission status, excluding the "salary" variable. 
+We then utilize the randomForest function to train a random forest model in predicting admission status, excluding the "salary" variable, and then generate a Variable Importance Plot based on the model. 
 
 ```{r}
 # Train random forest model
@@ -248,9 +251,9 @@ rf_model_importance <- randomForest(status ~ . -salary, data = college_df, impor
 # Plot feature importance
 varImpPlot(rf_model_importance, main = "Random Forest Feature Importance")
 ```
-We can see in the MeanDecreaseGini plot graph of feature importance that "ssc_p", "hsc_p", "degree_p", "mba_p", "etest_p", and "workex" are the most significant variables in predicting college admission status as they are nodes of the steepest drop curve.
+We can see in the MeanDecreaseGini plot graph of feature importance above that "ssc_p", "hsc_p", "degree_p", "mba_p", "etest_p", "workex", and "specialisation_Mkt_HR" are the most significant variables in predicting college admission status as they are factors of the steepest drop curve. 
 
-Next, we rigorously test the trained Random Forest model by applying it to the designated test set, generating predictions that serve as a critical measure of its efficacy. To ensure consistency with the original status variable, the predicted values are converted into factors, maintaining alignment with the variable's distinct levels. We then use this evaluation to compute our confusion matrix, which provides the detailed breakdown into the model's accuracy, highlighting areas of strength and areas that may require refinement.
+Next, we rigorously test the trained Random Forest model by applying it to the designated test set, generating predictions that serve as a critical measure of its efficacy. To ensure consistency with the original status variable, the predicted values are converted into factors, maintaining alignment with the variable's distinct levels. We then use the above data from the feature importance plot to make a new model featuring only the most important factors, and we compare its confusion matrix on the test data to that of the overall Random Forest model. 
 
 ```{r}
 # Make predictions on the test set
@@ -265,13 +268,28 @@ print(conf_matrix_rf)
 
 ```
 
-### 2.2 Building Random Forest Model
+```{r}
+
+# Train new forest model based on most important factors
+rf_new_model_importance <- randomForest(status ~ ssc_p + hsc_p + degree_p + mba_p + etest_p + workex + specialisation_Mkt_HR + gender, data = train_data, importance = TRUE)
+
+# Make predictions on the test set
+rf_pred <- predict(rf_new_model_importance, newdata = test_data)
+
+# Convert predicted values to factors with the same levels as the original status variable
+rf_pred <- factor(rf_pred, levels = levels(test_data$status))
+
+# Confusion matrix
+conf_matrix_rf <- confusionMatrix(data = rf_pred, reference = test_data$status)
+print(conf_matrix_rf)
+```
+Using the 8 most important features the accuracy dropped by 13.95%, which is an acceptable tradeoff for not having to spend the resources to track less important factors. We tried adding various extra factors to the second model to increase its accuracy, but found that after 8 important factors adding more did not provide enough of an accuracy boost to make their addition worth tracking. 
 
 We attempted to use hyper-parameters for Random Forest optimization, however the default parameters were chosen as they are already optimized for the model. Therefore, we decided against updating the hyper-parameters. 
 
 ### 2.3 Random Forest Results
 
-Lastly, the following code showcases a more robust assessment of model performance using the variables of significant importance and an iterative evaluation over 10 splits and calculations of the mean test prediction error. 
+Lastly, the following code showcases a more robust assessment of model performance using the variables of significant importance and an iterative evaluation over 10 splits and calculations of the mean test prediction error. The resulting mean test prediction error is 0.1744186
 
 ```{r}
 set.seed(41)
