@@ -216,7 +216,7 @@ Model equation:
 
 $status\sim\ gender + ssc\_p + ssc\_b + hsc\_p + hsc\_b + hsc\_s + degree\_p + degree\_t + workex + etest\_p + specialisation + mba\_p$
 
-Using this model equation we will look over which predictors are of significant importance using variable importance plot. Random Forest was used because it is more robust to overfitting compared to Logistical Regression, especially when dealing with high-dimensional data. It combines predictions from multiple decision trees, providing a natural form of regularization. Additionally, it has a built-in feature importance measure, which enables the identification of key predictors in the model. However, Random Forest models are computationally intensive and may overfit to noise in training data if the number of trees is too high
+Using this model equation we will look over which predictors are of significant importance using variable importance plot. Random Forest was used because it is more robust to overfitting compared to Logistical Regression. It combines predictions from multiple decision trees, providing a natural form of regularization. Additionally, it has a built-in feature importance measure, which enables the identification of key predictors in the model. However, Random Forest models are computationally intensive and may overfit to noise in training data if the number of trees is too high
 
 
 ### 2.2 Building Random Forest Model
@@ -289,7 +289,7 @@ We attempted to use hyper-parameters for Random Forest optimization, however the
 
 ### 2.3 Random Forest Results
 
-Lastly, the following code showcases a more robust assessment of model performance using the variables of significant importance and an iterative evaluation over 10 splits and calculations of the mean test prediction error. The resulting mean test prediction error is 0.1744186
+Lastly, the following code showcases a more robust assessment of model performance using the variables of significant importance and an iterative evaluation over 10 splits and calculations of the mean test prediction error. The resulting mean test prediction error is 0.1209302
 
 ```{r}
 set.seed(41)
@@ -300,7 +300,7 @@ for (iteration in 1:10) {
   train_data <- college_df[sample_indices, ]
   test_data <- college_df[-sample_indices, ]
   
-  rf_model <- randomForest(status ~ ssc_p + hsc_p + degree_p + mba_p + etest_p + workex, data = train_data, importance = TRUE)
+  rf_model <- randomForest(status ~ ssc_p + hsc_p + degree_p + mba_p + etest_p + workex + specialisation_Mkt_HR + gender, data = train_data, importance = TRUE)
   
   rf_pred <- predict(rf_model, newdata = test_data)
   
