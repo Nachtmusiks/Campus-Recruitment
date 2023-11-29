@@ -256,8 +256,11 @@ We can see in the MeanDecreaseGini plot graph of feature importance above that "
 Next, we rigorously test the trained Random Forest model by applying it to the designated test set, generating predictions that serve as a critical measure of its efficacy. To ensure consistency with the original status variable, the predicted values are converted into factors, maintaining alignment with the variable's distinct levels. We then use the above data from the feature importance plot to make a new model featuring only the most important factors, and we compare its confusion matrix on the test data to that of the overall Random Forest model. 
 
 ```{r}
+# Train random forest model
+rf_model_no_importance <- randomForest(status ~ . -salary, data = train_data, importance = TRUE)
+
 # Make predictions on the test set
-rf_pred <- predict(rf_model_importance, newdata = test_data)
+rf_pred <- predict(rf_model_no_importance, newdata = test_data)
 
 # Convert predicted values to factors with the same levels as the original status variable
 rf_pred <- factor(rf_pred, levels = levels(test_data$status))
@@ -283,13 +286,13 @@ rf_pred <- factor(rf_pred, levels = levels(test_data$status))
 conf_matrix_rf <- confusionMatrix(data = rf_pred, reference = test_data$status)
 print(conf_matrix_rf)
 ```
-Using the 8 most important features the accuracy dropped by 13.95%, which is an acceptable tradeoff for not having to spend the resources to track less important factors. We tried adding various extra factors to the second model to increase its accuracy, but found that after 8 important factors adding more did not provide enough of an accuracy boost to make their addition worth tracking. 
+Using only the 8 most important features, the accuracy rose by 2.33%, which both improves accuaracy and allows us to not have to spend the resources to track less important factors. We tried adding various extra factors to the second model to increase its accuracy, but found that after 8 important factors adding more did not provide enough of an accuracy boost to make their addition worth tracking. 
 
 We attempted to use hyper-parameters for Random Forest optimization, however the default parameters were chosen as they are already optimized for the model. Therefore, we decided against updating the hyper-parameters. 
 
 ### 2.3 Random Forest Results
 
-Lastly, the following code showcases a more robust assessment of model performance using the variables of significant importance and an iterative evaluation over 10 splits and calculations of the mean test prediction error. The resulting mean test prediction error is 0.1209302
+Lastly, the following code showcases a more robust assessment of model performance using the variables of significant importance and an iterative evaluation over 10 splits and calculations of the mean test prediction error. 
 
 ```{r}
 set.seed(41)
@@ -313,6 +316,12 @@ for (iteration in 1:10) {
 mean_test_error <- mean(test_errors)
 print(mean_test_error)
 ```
+The resulting mean test prediction error is 0.1209302, which means the model performs reasonable well even after removing many of the less important variables.
+```{r}
+# Plot feature importance
+varImpPlot(rf_new_model_importance, main = "Random Forest Feature Importance")
+```
+The analysis reveals that certain academic and personal attributes significantly influence a student's placement status. The most impactful factors, in descending order, include 10th-grade education performance, degree percentage, 12th-grade education attainment, MBA percentage, employability test performance, work experience, gender, and specialization in management and human resources. This ranking suggests a hierarchical significance in the role these variables play in determining placement outcomes. Potential explanations for this hierarchy may include the foundational importance of early education metrics, the relevance of advanced academic achievements, and the added value brought by practical experience and specialized skills. Moreover, gender-based and career-focused considerations further contribute to the nuanced dynamics influencing placement outcomes, emphasizing the multifaceted nature of the decision-making process in student placements.
 
 ## Bibliography
 
