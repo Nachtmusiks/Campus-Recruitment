@@ -274,7 +274,10 @@ print(conf_matrix_rf)
 ```{r}
 
 # Train new forest model based on most important factors
-rf_new_model_importance <- randomForest(status ~ ssc_p + hsc_p + degree_p + mba_p + etest_p + workex + specialisation_Mkt_HR + gender, data = train_data, importance = TRUE)
+rf_new_model_importance <- randomForest(status ~ ssc_p + hsc_p + degree_p + 
+                                          mba_p + etest_p + workex + 
+                                          specialisation_Mkt_HR + gender, 
+                                        data = train_data, importance = TRUE)
 
 # Make predictions on the test set
 rf_pred <- predict(rf_new_model_importance, newdata = test_data)
@@ -303,7 +306,9 @@ for (iteration in 1:10) {
   train_data <- college_df[sample_indices, ]
   test_data <- college_df[-sample_indices, ]
   
-  rf_model <- randomForest(status ~ ssc_p + hsc_p + degree_p + mba_p + etest_p + workex + specialisation_Mkt_HR + gender, data = train_data, importance = TRUE)
+  rf_model <- randomForest(status ~ ssc_p + hsc_p + degree_p + mba_p + etest_p + 
+                             workex + specialisation_Mkt_HR + 
+                             gender, data = train_data, importance = TRUE)
   
   rf_pred <- predict(rf_model, newdata = test_data)
   
