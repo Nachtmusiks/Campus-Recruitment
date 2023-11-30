@@ -152,7 +152,6 @@ summary(exams.glm2)
 ## ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ### RANDOM FOREST
-
 library(randomForest)
 library(randomForestExplainer)
 library(caret)
@@ -169,8 +168,6 @@ sample_indices <- sample.int(n = nrow(college_df), size = floor(0.8 * nrow(-coll
 train_data <- college_df[sample_indices, ]
 test_data <- college_df[-sample_indices, ]
 
-## ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 # Train random forest model
 rf_model_importance <- randomForest(status ~ . -salary, data = college_df, importance = TRUE)
 
@@ -179,8 +176,11 @@ varImpPlot(rf_model_importance, main = "Random Forest Feature Importance")
 
 ## ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+# Train random forest model
+rf_model_no_importance <- randomForest(status ~ . -salary, data = train_data, importance = TRUE)
+
 # Make predictions on the test set
-rf_pred <- predict(rf_model_importance, newdata = test_data)
+rf_pred <- predict(rf_model_no_importance, newdata = test_data)
 
 # Convert predicted values to factors with the same levels as the original status variable
 rf_pred <- factor(rf_pred, levels = levels(test_data$status))
@@ -191,33 +191,44 @@ print(conf_matrix_rf)
 
 ## ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Set seed for reproducibility
-set.seed(41)
 
-# Initialize a vector to store test prediction errors
-test_errors <- numeric(10)
+# Train new forest model based on most important factors
+rf_new_model_importance <- randomForest(status ~ ssc_p + hsc_p + degree_p + 
+                                          mba_p + etest_p + workex + 
+                                          specialisation_Mkt_HR + gender, 
+                                        data = train_data, importance = TRUE)
+
+# Make predictions on the test set
+rf_pred <- predict(rf_new_model_importance, newdata = test_data)
+
+# Convert predicted values to factors with the same levels as the original status variable
+rf_pred <- factor(rf_pred, levels = levels(test_data$status))
+
+# Confusion matrix
+conf_matrix_rf <- confusionMatrix(data = rf_pred, reference = test_data$status)
+print(conf_matrix_rf)
+
+## ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Repeat the process 10 times
+set.seed(41)
+test_errors <- numeric(10)
+
 for (iteration in 1:10) {
-  # Randomly split the data into training (80%) and testing (20%)
   sample_indices <- sample.int(n = nrow(college_df), size = floor(0.8 * nrow(college_df)), replace = FALSE)
   train_data <- college_df[sample_indices, ]
   test_data <- college_df[-sample_indices, ]
   
-  # Train random forest model
-  rf_model <- randomForest(status ~ . -salary, data = train_data, importance = TRUE)
+  rf_model <- randomForest(status ~ ssc_p + hsc_p + degree_p + mba_p + etest_p + 
+                             workex + specialisation_Mkt_HR + 
+                             gender, data = train_data, importance = TRUE)
   
-  # Make predictions on the test set
   rf_pred <- predict(rf_model, newdata = test_data)
   
-  # Record the test prediction error (e.g., using accuracy)
   test_error <- mean(rf_pred != test_data$status)
   
-  # Store the test error for this iteration
   test_errors[iteration] <- test_error
   
-  #print the test error for each iteration
-  print(paste("Test Prediction Error for Test #", iteration, ":", test_error))
 }
 
 # Calculate and print the mean test prediction error over the 10 iterations
